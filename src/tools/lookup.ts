@@ -31,7 +31,7 @@ export async function lookup(params: LookupParams, resolver: Resolver, client: E
 
   const matches = results.flatMap((section: unknown) => {
     const s = section as Record<string, unknown>;
-    const items = (s.items as unknown[]) ?? [];
+    const items = (s.contents as unknown[]) ?? (s.items as unknown[]) ?? [];
     return items.map((item: unknown) => {
       const i = item as Record<string, unknown>;
       return {
@@ -39,8 +39,8 @@ export async function lookup(params: LookupParams, resolver: Resolver, client: E
         id: (i.id as string) ?? "",
         name: (i.displayName as string) ?? (i.name as string) ?? "",
         description: (i.description as string) ?? null,
-        league: safe(() => (i.league as Record<string, unknown>).abbreviation as string) ?? null,
-        sport: safe(() => (i.sport as Record<string, unknown>).slug as string) ?? null,
+        league: (i.defaultLeagueSlug as string) ?? safe(() => (i.league as Record<string, unknown>).abbreviation as string) ?? null,
+        sport: (i.sport as string) ?? safe(() => (i.sport as Record<string, unknown>).slug as string) ?? null,
       };
     });
   });

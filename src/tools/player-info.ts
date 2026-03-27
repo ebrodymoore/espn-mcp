@@ -20,11 +20,19 @@ export async function getPlayerInfo(params: PlayerInfoParams, resolver: Resolver
   if (!/^\d+$/.test(playerId)) {
     const searchResult = await client.get<Record<string, unknown>>(searchUrl(params.player), 600_000);
     const results = (searchResult?.results as unknown[]) ?? [];
-    const athleteSection = results.find((r: unknown) => (r as Record<string, unknown>).type === "athlete") as Record<string, unknown> | undefined;
-    const items = (athleteSection?.items as unknown[]) ?? [];
+    const playerSection = results.find((r: unknown) => {
+      const type = (r as Record<string, unknown>).type;
+      return type === "player" || type === "athlete";
+    }) as Record<string, unknown> | undefined;
+    const items = (playerSection?.contents as unknown[]) ?? (playerSection?.items as unknown[]) ?? [];
     const match = items[0] as Record<string, unknown> | undefined;
     if (!match) return { error: `Could not find a player matching '${params.player}'. Try their full name.` };
-    playerId = (match.id as string) ?? "";
+    // The search API returns the ESPN ID in the link URL or uid, extract numeric ID
+    const linkWeb = (match.link as Record<string, unknown>)?.web as string | undefined;
+    const uidStr = (match.uid as string) ?? "";
+    const idFromLink = linkWeb?.match(/\/id\/(\d+)/)?.[1];
+    const idFromUid = uidStr.match(/a:(\d+)/)?.[1];
+    playerId = idFromLink ?? idFromUid ?? (match.id as string) ?? "";
   }
 
   const url = playerUrl(sport, league, playerId, params.aspect);
