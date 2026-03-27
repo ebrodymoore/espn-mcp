@@ -1,0 +1,104 @@
+{
+  "nfl": {
+    "sport": "football",
+    "league": "nfl",
+    "name": "National Football League",
+    "aliases": ["pro football"],
+    "teams": {
+      "sf": {
+        "id": "25",
+        "name": "San Francisco 49ers",
+        "abbreviation": "SF",
+        "aliases": ["niners", "9ers", "49ers", "san francisco"]
+      },
+      "kc": {
+        "id": "12",
+        "name": "Kansas City Chiefs",
+        "abbreviation": "KC",
+        "aliases": ["chiefs", "kansas city"]
+      },
+      "dal": {
+        "id": "6",
+        "name": "Dallas Cowboys",
+        "abbreviation": "DAL",
+        "aliases": ["cowboys", "dallas", "americas team"]
+      }
+    }
+  },
+  "nba": {
+    "sport": "basketball",
+    "league": "nba",
+    "name": "National Basketball Association",
+    "aliases": [],
+    "teams": {
+      "lal": {
+        "id": "13",
+        "name": "Los Angeles Lakers",
+        "abbreviation": "LAL",
+        "aliases": ["lakers", "los angeles lakers", "la lakers"]
+      },
+      "bos": {
+        "id": "2",
+        "name": "Boston Celtics",
+        "abbreviation": "BOS",
+        "aliases": ["celtics", "boston"]
+      }
+    }
+  },
+  "mlb": {
+    "sport": "baseball",
+    "league": "mlb",
+    "name": "Major League Baseball",
+    "aliases": [],
+    "teams": {
+      "nyy": {
+        "id": "10",
+        "name": "New York Yankees",
+        "abbreviation": "NYY",
+        "aliases": ["yankees", "yanks", "bronx bombers"]
+      }
+    }
+  },
+  "nhl": {
+    "sport": "hockey",
+    "league": "nhl",
+    "name": "National Hockey League",
+    "aliases": [],
+    "teams": {}
+  },
+  "college-football": {
+    "sport": "football",
+    "league": "college-football",
+    "name": "NCAA Football",
+    "aliases": ["cfb", "ncaa football", "college football"],
+    "teams": {}
+  },
+  "mens-college-basketball": {
+    "sport": "basketball",
+    "league": "mens-college-basketball",
+    "name": "NCAA Men's Basketball",
+    "aliases": ["cbb", "ncaa basketball", "march madness", "college basketball"],
+    "teams": {}
+  },
+  "wnba": {
+    "sport": "basketball",
+    "league": "wnba",
+    "name": "WNBA",
+    "aliases": ["womens basketball"],
+    "teams": {}
+  },
+  "eng.1": {
+    "sport": "soccer",
+    "league": "eng.1",
+    "name": "English Premier League",
+    "aliases": ["premier league", "epl", "prem"],
+    "teams": {}
+  },
+  "usa.1": {
+    "sport": "soccer",
+    "league": "usa.1",
+    "name": "Major League Soccer",
+    "aliases": ["mls"],
+    "teams": {}
+  }
+}
