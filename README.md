@@ -58,16 +58,29 @@ Golf (PGA), F1, NASCAR, IndyCar, UFC/MMA, Tennis, Rugby, CFL — scores, teams, 
 
 Once installed, ask Claude things like:
 
-- "What are today's NBA scores?"
-- "Show me the Chiefs roster"
-- "How is Patrick Mahomes doing this season?"
-- "What are the NFL standings?"
-- "Give me the box score from last night's Lakers game"
-- "Who leads the NBA in assists?"
-- "What's the latest NFL news?"
-- "What were the odds for the Super Bowl?"
-- "Show me the AP Top 25 college football rankings"
-- "Compare LeBron and Steph Curry's stats this season"
+### Quick Lookups
+- "How is Kevin McGonigle doing so far this season?"
+- "What are Justin Verlander's career stats?"
+- "Are there any active MLB games right now?"
+- "Give me the play-by-play from the Red Wings' last game"
+
+### Analysis & Comparison
+- "How does Andrew Copp compare to the rest of the Red Wings forwards?"
+- "What's the Pistons' record when Cade Cunningham doesn't play?"
+- "Break down Yaxel Lendeborg's splits — home vs away, by month"
+
+### Playoff & Schedule Intelligence
+- "How difficult is the Red Wings' remaining schedule vs other teams in the playoff hunt?"
+- "How has Detroit performed against the teams remaining on their schedule?"
+- "Break down the Eastern Conference wild card race for me"
+
+### Build On Top Of It
+These aren't canned responses — Claude is combining multiple tool calls, cross-referencing data, and doing real analysis. This means you can build agents and workflows that:
+- **Scout opponents** — pull rosters, recent form, and head-to-head records before game day
+- **Track prospect development** — monitor game logs and splits for players across leagues
+- **Power betting models** — feed live odds, win probability, and historical stats into your own pipelines
+- **Automate recaps** — generate post-game summaries from box scores and play-by-play data
+- **Monitor playoff races** — calculate strength of schedule and remaining-game scenarios on demand
 
 ## How It Works
 
