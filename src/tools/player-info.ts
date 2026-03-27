@@ -42,6 +42,8 @@ export async function getPlayerInfo(params: PlayerInfoParams, resolver: Resolver
     case "overview": return trimPlayerOverview(raw);
     case "stats": return trimPlayerStats(raw);
     case "gamelog": return trimPlayerGamelog(raw);
+    case "bio": return { teamHistory: (raw?.teamHistory as unknown[]) ?? [] };
+    case "splits": return raw;
     default: return raw;
   }
 }
