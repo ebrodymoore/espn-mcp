@@ -1,0 +1,36 @@
+{
+  "name": "espn-mcp",
+  "version": "0.1.0",
+  "description": "MCP server giving Claude access to ESPN sports data",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "espn-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "generate-registry": "tsx scripts/generate-registry.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["mcp", "espn", "sports", "claude"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "data"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.1.0"
+  }
+}
