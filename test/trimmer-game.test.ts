@@ -130,17 +130,17 @@ describe("trimOdds", () => {
 });
 
 describe("trimPlayByPlay", () => {
-  it("returns plays and scoringPlays arrays", () => {
+  it("returns periods and scoringPlays arrays", () => {
     const result = trimPlayByPlay(nhlFixture);
-    expect(result).toHaveProperty("plays");
+    expect(result).toHaveProperty("periods");
     expect(result).toHaveProperty("scoringPlays");
-    expect(Array.isArray(result.plays)).toBe(true);
+    expect(Array.isArray(result.periods)).toBe(true);
     expect(Array.isArray(result.scoringPlays)).toBe(true);
   });
 
   it("returns empty arrays for empty input", () => {
     const empty = trimPlayByPlay({});
-    expect(empty.plays).toEqual([]);
+    expect(empty.periods).toEqual([]);
     expect(empty.scoringPlays).toEqual([]);
   });
 });

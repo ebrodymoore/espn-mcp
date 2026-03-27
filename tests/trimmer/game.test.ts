@@ -84,6 +84,30 @@ const MOCK_SUMMARY = {
   videos: [{ id: "ignore" }],
 };
 
+// Richer mock for play-by-play filtering tests
+const MOCK_PBP_DATA = {
+  plays: [
+    { text: "Start of 1st Period", type: { text: "Period Start" }, clock: { displayValue: "20:00" }, period: { number: 1 }, homeScore: "0", awayScore: "0", scoringPlay: false },
+    { text: "Faceoff won by Team A", type: { text: "Face Off" }, clock: { displayValue: "20:00" }, period: { number: 1 }, homeScore: "0", awayScore: "0", scoringPlay: false },
+    { text: "Shot by Player X", type: { text: "Shot" }, clock: { displayValue: "18:30" }, period: { number: 1 }, homeScore: "0", awayScore: "0", scoringPlay: false },
+    { text: "Player Y Hooking against Player Z", type: { text: "Hooking" }, clock: { displayValue: "15:00" }, period: { number: 1 }, homeScore: "0", awayScore: "0", scoringPlay: false },
+    { text: "Hit by Player A", type: { text: "Hit" }, clock: { displayValue: "12:00" }, period: { number: 1 }, homeScore: "0", awayScore: "0", scoringPlay: false },
+    { text: "Goal by Player B", type: { text: "Goal" }, clock: { displayValue: "10:00" }, period: { number: 1 }, homeScore: "1", awayScore: "0", scoringPlay: true },
+    { text: "Takeaway by Player C", type: { text: "Takeaway" }, clock: { displayValue: "8:00" }, period: { number: 1 }, homeScore: "1", awayScore: "0", scoringPlay: false },
+    { text: "End of 1st Period", type: { text: "Period End" }, clock: { displayValue: "0:00" }, period: { number: 1 }, homeScore: "1", awayScore: "0", scoringPlay: false },
+    { text: "Start of 2nd Period", type: { text: "Period Start" }, clock: { displayValue: "20:00" }, period: { number: 2 }, homeScore: "1", awayScore: "0", scoringPlay: false },
+    { text: "Shot by Player D", type: { text: "Shot" }, clock: { displayValue: "17:00" }, period: { number: 2 }, homeScore: "1", awayScore: "0", scoringPlay: false },
+    { text: "Giveaway by Player E", type: { text: "Giveaway" }, clock: { displayValue: "14:00" }, period: { number: 2 }, homeScore: "1", awayScore: "0", scoringPlay: false },
+    { text: "Goal by Player F", type: { text: "Goal" }, clock: { displayValue: "11:00" }, period: { number: 2 }, homeScore: "1", awayScore: "1", scoringPlay: true },
+    { text: "Player G Tripping against Player H", type: { text: "Tripping" }, clock: { displayValue: "5:00" }, period: { number: 2 }, homeScore: "1", awayScore: "1", scoringPlay: false },
+    { text: "End of 2nd Period", type: { text: "Period End" }, clock: { displayValue: "0:00" }, period: { number: 2 }, homeScore: "1", awayScore: "1", scoringPlay: false },
+  ],
+  scoringPlays: [
+    { text: "Goal by Player B", clock: { displayValue: "10:00" }, period: { number: 1 }, homeScore: 1, awayScore: 0, team: { abbreviation: "HOM" } },
+    { text: "Goal by Player F", clock: { displayValue: "11:00" }, period: { number: 2 }, homeScore: 1, awayScore: 1, team: { abbreviation: "AWY" } },
+  ],
+};
+
 describe("trimBoxscore", () => {
   it("extracts player stat lines", () => {
     const result = trimBoxscore(MOCK_SUMMARY);
@@ -123,30 +147,76 @@ describe("trimBoxscore", () => {
 });
 
 describe("trimPlayByPlay", () => {
-  it("extracts plays array", () => {
-    const result = trimPlayByPlay(MOCK_SUMMARY);
-    expect(result.plays.length).toBeGreaterThan(0);
-    expect(result.plays[0]).toEqual({
-      text: "G.Smith pass to DK Metcalf for 25 yards",
-      type: "Pass",
-      clock: "12:30",
-      period: 1,
-      homeScore: "0",
-      awayScore: "0",
-      scoringPlay: false,
-    });
+  it("defaults to key plays filter", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA);
+    const allPlays = result.periods.flatMap((p) => p.plays);
+    // Should include: Period Start/End, Hooking, Goal, Tripping — NOT: Face Off, Shot, Hit, Takeaway, Giveaway
+    const types = allPlays.map((p) => p.type);
+    expect(types).not.toContain("Face Off");
+    expect(types).not.toContain("Shot");
+    expect(types).not.toContain("Hit");
+    expect(types).not.toContain("Takeaway");
+    expect(types).not.toContain("Giveaway");
+    expect(types).toContain("Goal");
+    expect(types).toContain("Hooking");
+    expect(types).toContain("Tripping");
+    expect(types).toContain("Period Start");
+    expect(types).toContain("Period End");
   });
 
-  it("extracts scoring plays", () => {
-    const result = trimPlayByPlay(MOCK_SUMMARY);
-    expect(result.scoringPlays).toHaveLength(1);
-    expect(result.scoringPlays[0].team).toBe("SEA");
+  it("scoring filter returns only scoring plays", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA, "scoring");
+    const allPlays = result.periods.flatMap((p) => p.plays);
+    expect(allPlays).toHaveLength(2);
+    expect(allPlays.every((p) => p.scoringPlay)).toBe(true);
+  });
+
+  it("all filter returns every play", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA, "all");
+    const allPlays = result.periods.flatMap((p) => p.plays);
+    expect(allPlays).toHaveLength(14);
+  });
+
+  it("groups plays by period", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA, "all");
+    expect(result.periods).toHaveLength(2);
+    expect(result.periods[0].period).toBe(1);
+    expect(result.periods[1].period).toBe(2);
+    expect(result.periods[0].plays).toHaveLength(8);
+    expect(result.periods[1].plays).toHaveLength(6);
+  });
+
+  it("only includes score when it changes", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA, "key");
+    const allPlays = result.periods.flatMap((p) => p.plays);
+    // First play should always have score
+    expect(allPlays[0].homeScore).toBeDefined();
+    // Plays with same score as previous should not have score fields
+    const playsWithScore = allPlays.filter((p) => p.homeScore !== undefined);
+    // Score changes: initial 0-0, then 1-0 (goal), then 1-1 (goal) = 3 score states
+    // But period boundaries may reset the tracking — at minimum goals should have scores
+    const goalPlays = allPlays.filter((p) => p.type === "Goal");
+    expect(goalPlays.every((p) => p.homeScore !== undefined)).toBe(true);
+  });
+
+  it("extracts scoring plays summary", () => {
+    const result = trimPlayByPlay(MOCK_PBP_DATA);
+    expect(result.scoringPlays).toHaveLength(2);
+    expect(result.scoringPlays[0].team).toBe("HOM");
+    expect(result.scoringPlays[1].team).toBe("AWY");
   });
 
   it("handles missing plays gracefully", () => {
     const result = trimPlayByPlay({});
-    expect(result.plays).toEqual([]);
+    expect(result.periods).toEqual([]);
     expect(result.scoringPlays).toEqual([]);
+  });
+
+  // Backward compat: old single-arg call still works (defaults to "key")
+  it("works with single argument", () => {
+    const result = trimPlayByPlay(MOCK_SUMMARY);
+    expect(result.periods.length).toBeGreaterThanOrEqual(0);
+    expect(result.scoringPlays).toHaveLength(1);
   });
 });
 

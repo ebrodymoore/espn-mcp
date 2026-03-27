@@ -9,6 +9,7 @@ export const gameSchema = z.object({
   sport: z.string().optional().describe("Sport (optional, helps build correct URL)"),
   league: z.string().optional().describe("League (optional, helps build correct URL)"),
   detail: z.enum(["summary", "boxscore", "playbyplay", "odds", "winprobability"]).describe("What detail to retrieve"),
+  playTypes: z.enum(["key", "scoring", "all"]).optional().describe("For playbyplay: 'key' (default) = goals, penalties, period boundaries, challenges; 'scoring' = goals only; 'all' = every play"),
 });
 
 export type GameParams = z.infer<typeof gameSchema>;
@@ -34,7 +35,7 @@ export async function getGame(params: GameParams, resolver: Resolver, client: Es
       try {
         const url = gameSummaryUrl(l.sport, l.league, params.gameId);
         const raw = await client.get<Record<string, unknown>>(url, 3_600_000);
-        return extractDetail(raw, params.detail);
+        return extractDetail(raw, params.detail, params.playTypes);
       } catch { continue; }
     }
     return { error: "Could not find game. Please provide sport and league, or verify the game ID." };
@@ -42,14 +43,14 @@ export async function getGame(params: GameParams, resolver: Resolver, client: Es
 
   const url = gameSummaryUrl(sport, league, params.gameId);
   const raw = await client.get<Record<string, unknown>>(url, 3_600_000);
-  return extractDetail(raw, params.detail);
+  return extractDetail(raw, params.detail, params.playTypes);
 }
 
-function extractDetail(raw: Record<string, unknown>, detail: string): unknown {
+function extractDetail(raw: Record<string, unknown>, detail: string, playTypes?: string): unknown {
   switch (detail) {
     case "summary": return trimGameSummary(raw);
     case "boxscore": return trimBoxscore(raw);
-    case "playbyplay": return trimPlayByPlay(raw);
+    case "playbyplay": return trimPlayByPlay(raw, playTypes ?? "key");
     case "odds": return trimOdds(raw);
     case "winprobability": return trimWinProbability(raw);
     default: return { error: `Unknown detail type: ${detail}` };

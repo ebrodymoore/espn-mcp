@@ -109,9 +109,8 @@ interface TrimmedPlay {
   text: string;
   type: string;
   clock: string | null;
-  period: number | null;
-  homeScore: string | null;
-  awayScore: string | null;
+  homeScore?: string | null;
+  awayScore?: string | null;
   scoringPlay: boolean;
 }
 
@@ -124,16 +123,38 @@ interface TrimmedScoringPlay {
   team: string;
 }
 
-interface TrimmedPlayByPlay {
+interface TrimmedPeriodPlays {
+  period: number;
   plays: TrimmedPlay[];
+}
+
+interface TrimmedPlayByPlay {
+  periods: TrimmedPeriodPlays[];
   scoringPlays: TrimmedScoringPlay[];
 }
 
-export function trimPlayByPlay(raw: Record<string, unknown>): TrimmedPlayByPlay {
+// Patterns that match key/significant play types (case-insensitive)
+const KEY_PLAY_PATTERNS = [
+  /goal/i, /penalty/i, /period\s*(start|end)/i, /end\s*of\s*game/i,
+  /touchdown/i, /field\s*goal/i, /interception/i, /fumble/i,
+  /foul/i, /challenge/i, /review/i, /roughing/i, /fighting/i,
+  /hooking/i, /tripping/i, /interference/i, /slashing/i,
+  /high.?stick/i, /boarding/i, /cross.?check/i, /holding/i,
+  /delay\s*of\s*game/i, /ejection/i, /flagrant/i, /technical/i,
+  /safety/i, /two.?point/i, /extra\s*point/i, /blocked/i,
+];
+
+function isKeyPlay(type: string, scoringPlay: boolean): boolean {
+  if (scoringPlay) return true;
+  return KEY_PLAY_PATTERNS.some((pat) => pat.test(type));
+}
+
+export function trimPlayByPlay(raw: Record<string, unknown>, filter: string = "key"): TrimmedPlayByPlay {
   const playsArr = (raw?.plays as unknown[]) ?? [];
   const scoringArr = (raw?.scoringPlays as unknown[]) ?? [];
 
-  const plays: TrimmedPlay[] = playsArr.map((p: unknown) => {
+  // Parse all plays
+  const allPlays = playsArr.map((p: unknown) => {
     const play = p as Record<string, unknown>;
     return {
       text: (play.text as string) ?? "",
@@ -146,6 +167,46 @@ export function trimPlayByPlay(raw: Record<string, unknown>): TrimmedPlayByPlay 
     };
   });
 
+  // Filter plays
+  const filtered = filter === "all"
+    ? allPlays
+    : filter === "scoring"
+      ? allPlays.filter((p) => p.scoringPlay)
+      : allPlays.filter((p) => isKeyPlay(p.type, p.scoringPlay));
+
+  // Group by period and strip redundant scores
+  const periodMap = new Map<number, TrimmedPlay[]>();
+  let prevScore: string | null = null;
+
+  for (const play of filtered) {
+    const period = play.period ?? 0;
+    if (!periodMap.has(period)) periodMap.set(period, []);
+
+    const currentScore = `${play.homeScore}-${play.awayScore}`;
+    const scoreChanged = currentScore !== prevScore;
+    prevScore = currentScore;
+
+    const trimmed: TrimmedPlay = {
+      text: play.text,
+      type: play.type,
+      clock: play.clock,
+      scoringPlay: play.scoringPlay,
+    };
+
+    // Only include score when it changes
+    if (scoreChanged) {
+      trimmed.homeScore = play.homeScore;
+      trimmed.awayScore = play.awayScore;
+    }
+
+    periodMap.get(period)!.push(trimmed);
+  }
+
+  const periods: TrimmedPeriodPlays[] = Array.from(periodMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([period, plays]) => ({ period, plays }));
+
+  // Scoring plays summary
   const scoringPlays: TrimmedScoringPlay[] = scoringArr.map((p: unknown) => {
     const play = p as Record<string, unknown>;
     return {
@@ -158,7 +219,7 @@ export function trimPlayByPlay(raw: Record<string, unknown>): TrimmedPlayByPlay 
     };
   });
 
-  return { plays, scoringPlays };
+  return { periods, scoringPlays };
 }
 
 // --- Odds ---
