@@ -8,7 +8,7 @@ interface TrimmedArticle {
 }
 
 export function trimNews(raw: Record<string, unknown>): { articles: TrimmedArticle[] } {
-  const articlesArr = (raw?.articles as unknown[]) ?? [];
+  const articlesArr = (raw?.headlines as unknown[]) ?? (raw?.articles as unknown[]) ?? [];
 
   const articles: TrimmedArticle[] = articlesArr.map((a: unknown) => {
     const article = a as Record<string, unknown>;

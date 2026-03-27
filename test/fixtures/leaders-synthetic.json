@@ -1,0 +1,40 @@
+{
+  "categories": [
+    {
+      "name": "points",
+      "displayName": "Points Leaders",
+      "leaders": [
+        {
+          "rank": 1,
+          "displayValue": "127",
+          "athlete": {
+            "displayName": "Nathan MacKinnon",
+            "team": { "abbreviation": "COL" }
+          }
+        },
+        {
+          "rank": 2,
+          "displayValue": "110",
+          "athlete": {
+            "displayName": "Nikita Kucherov",
+            "team": { "abbreviation": "TB" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "goals",
+      "displayName": "Goals Leaders",
+      "leaders": [
+        {
+          "rank": 1,
+          "displayValue": "62",
+          "athlete": {
+            "displayName": "Auston Matthews",
+            "team": { "abbreviation": "TOR" }
+          }
+        }
+      ]
+    }
+  ]
+}
