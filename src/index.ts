@@ -36,7 +36,7 @@ server.tool(
 
 server.tool(
   "get_scores",
-  "Get live and recent scores. Can filter by league, team, and date. Returns gameId for use with get_game.",
+  "Get live and recent scores/results. Can filter by league, team, and date (supports 'yesterday', 'today', 'tomorrow', or YYYY-MM-DD). Use this to find a specific game — returns gameId for use with get_game.",
   scoresSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getScores(params, resolver, client), null, 2) }],
@@ -45,7 +45,7 @@ server.tool(
 
 server.tool(
   "get_team_info",
-  "Get team information: overview, roster, schedule, injuries, depth_chart, transactions, or history.",
+  "Get team information: overview, roster, schedule (full season), injuries, depth_chart, transactions, or history. For a specific game on a date, use get_scores instead.",
   teamInfoSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getTeamInfo(params, resolver, client), null, 2) }],
