@@ -7,7 +7,6 @@ import { trimNews } from "../trimmer/news.js";
 export const newsSchema = z.object({
   sport: z.string().optional().describe("Sport to filter news"),
   league: z.string().optional().describe("League to filter news"),
-  team: z.string().optional().describe("Team to filter news"),
 });
 
 export type NewsParams = z.infer<typeof newsSchema>;
