@@ -122,4 +122,30 @@ describe("ESPN URL builders", () => {
       );
     });
   });
+
+  describe("URL encoding", () => {
+    it("encodes special characters in team ID", () => {
+      expect(teamUrl("football", "nfl", "foo/bar")).toBe(
+        "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/foo%2Fbar"
+      );
+    });
+
+    it("encodes special characters in teamAspectUrl", () => {
+      expect(teamAspectUrl("football", "nfl", "foo bar", "roster")).toBe(
+        "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/foo%20bar/roster"
+      );
+    });
+
+    it("encodes special characters in playerUrl", () => {
+      expect(playerUrl("football", "nfl", "12/34", "stats")).toBe(
+        "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/12%2F34/stats"
+      );
+    });
+
+    it("encodes special characters in gameSummaryUrl", () => {
+      expect(gameSummaryUrl("football", "nfl", "abc?x=1")).toBe(
+        "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=abc%3Fx%3D1"
+      );
+    });
+  });
 });

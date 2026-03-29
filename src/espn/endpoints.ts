@@ -17,7 +17,7 @@ export function scoreboardUrl(
 }
 
 export function teamUrl(sport: string, league: string, teamId: string): string {
-  return `${SITE_API}/site/v2/sports/${sport}/${league}/teams/${teamId}`;
+  return `${SITE_API}/site/v2/sports/${sport}/${league}/teams/${encodeURIComponent(teamId)}`;
 }
 
 export function teamAspectUrl(
@@ -27,7 +27,7 @@ export function teamAspectUrl(
   aspect: string
 ): string {
   const pathSegment = ASPECT_PATH_MAP[aspect] ?? aspect;
-  return `${SITE_API}/site/v2/sports/${sport}/${league}/teams/${teamId}/${pathSegment}`;
+  return `${SITE_API}/site/v2/sports/${sport}/${league}/teams/${encodeURIComponent(teamId)}/${pathSegment}`;
 }
 
 export function playerUrl(
@@ -36,7 +36,7 @@ export function playerUrl(
   playerId: string,
   aspect: string
 ): string {
-  return `${WEB_API}/common/v3/sports/${sport}/${league}/athletes/${playerId}/${aspect}`;
+  return `${WEB_API}/common/v3/sports/${sport}/${league}/athletes/${encodeURIComponent(playerId)}/${aspect}`;
 }
 
 export function gameSummaryUrl(
@@ -44,7 +44,7 @@ export function gameSummaryUrl(
   league: string,
   eventId: string
 ): string {
-  return `${SITE_API}/site/v2/sports/${sport}/${league}/summary?event=${eventId}`;
+  return `${SITE_API}/site/v2/sports/${sport}/${league}/summary?event=${encodeURIComponent(eventId)}`;
 }
 
 export function standingsUrl(sport: string, league: string): string {
