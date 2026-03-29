@@ -6,10 +6,13 @@
  * ESPN changes their response structure and our trimmers silently
  * return empty/default values.
  *
- * Run with: npx vitest run test/integration.test.ts
- * Skip in CI with: npx vitest run --exclude test/integration.test.ts
+ * Run with: RUN_INTEGRATION=1 npx vitest run test/integration.test.ts
+ * Skipped by default unless RUN_INTEGRATION=1 is set.
  */
 import { describe, it, expect, beforeAll } from "vitest";
+
+const RUN_INTEGRATION = process.env.RUN_INTEGRATION === "1";
+const describeIntegration = RUN_INTEGRATION ? describe : describe.skip;
 import { Cache } from "../src/cache.js";
 import { EspnClient } from "../src/espn/client.js";
 import { Resolver } from "../src/registry/resolver.js";
@@ -34,7 +37,7 @@ beforeAll(() => {
 
 const TIMEOUT = 15_000;
 
-describe("get_scores (live API)", () => {
+describeIntegration("get_scores (live API)", () => {
   it("returns games for NHL", async () => {
     const result = await getScores({ league: "nhl" }, resolver, client) as Record<string, unknown>;
     // May have 0 games on an off-day, but should have the games array
@@ -58,7 +61,7 @@ describe("get_scores (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("get_team_info (live API)", () => {
+describeIntegration("get_team_info (live API)", () => {
   it("returns team overview for Red Wings", async () => {
     const result = await getTeamInfo(
       { league: "nhl", team: "Red Wings", aspect: "overview" },
@@ -94,7 +97,7 @@ describe("get_team_info (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("get_player_info (live API)", () => {
+describeIntegration("get_player_info (live API)", () => {
   it("returns stats for a known player by name", async () => {
     const result = await getPlayerInfo(
       { league: "nhl", player: "Andrew Copp", aspect: "stats" },
@@ -165,7 +168,7 @@ describe("get_player_info (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("get_standings (live API)", () => {
+describeIntegration("get_standings (live API)", () => {
   it("returns standings groups for NHL", async () => {
     const result = await getStandings(
       { league: "nhl", type: "standings" },
@@ -186,7 +189,7 @@ describe("get_standings (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("get_news (live API)", () => {
+describeIntegration("get_news (live API)", () => {
   it("returns news articles for NHL", async () => {
     const result = await getNews(
       { league: "nhl" },
@@ -204,7 +207,7 @@ describe("get_news (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("lookup (live API)", () => {
+describeIntegration("lookup (live API)", () => {
   it("resolves a team name", async () => {
     const result = await lookup({ query: "Red Wings" }, resolver, client) as Record<string, unknown>;
     expect(result.type).toBe("team");
@@ -225,7 +228,7 @@ describe("lookup (live API)", () => {
   }, TIMEOUT);
 });
 
-describe("get_game (live API)", () => {
+describeIntegration("get_game (live API)", () => {
   it("returns game summary with teams", async () => {
     // Get a real game ID from scores first
     const scores = await getScores({ league: "nhl" }, resolver, client) as { games: Record<string, unknown>[] };
