@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EspnClient } from "../espn/client.js";
+import { EspnApiError } from "../espn/client.js";
 import type { Resolver } from "../registry/resolver.js";
 import { gameSummaryUrl } from "../espn/endpoints.js";
 import { trimBoxscore, trimPlayByPlay, trimOdds, trimWinProbability, trimGameSummary } from "../trimmer/game.js";
@@ -42,9 +43,16 @@ export async function getGame(params: GameParams, resolver: Resolver, client: Es
     return { error: "Could not find game. Please provide sport and league, or verify the game ID." };
   }
 
-  const url = gameSummaryUrl(sport, league, params.gameId);
-  const raw = await client.get<Record<string, unknown>>(url, 3_600_000);
-  return extractDetail(raw, params.detail, params.playTypes);
+  try {
+    const url = gameSummaryUrl(sport, league, params.gameId);
+    const raw = await client.get<Record<string, unknown>>(url, 3_600_000);
+    return extractDetail(raw, params.detail, params.playTypes);
+  } catch (err) {
+    if (err instanceof EspnApiError && err.status === 404) {
+      return { error: "game_not_found", message: `No ESPN data found for game '${params.gameId}'. Verify the game ID using get_scores.` };
+    }
+    throw err;
+  }
 }
 
 function extractDetail(raw: Record<string, unknown>, detail: string, playTypes?: string): unknown {

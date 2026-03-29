@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EspnClient } from "../espn/client.js";
+import { EspnApiError } from "../espn/client.js";
 import type { Resolver } from "../registry/resolver.js";
 import { teamUrl, teamAspectUrl } from "../espn/endpoints.js";
 import { trimTeamOverview, trimRoster, trimSchedule } from "../trimmer/team.js";
@@ -29,18 +30,25 @@ export async function getTeamInfo(params: TeamInfoParams, resolver: Resolver, cl
   const teamId = resolved?.id ?? params.team;
   const ttl = ASPECT_TTL[params.aspect] ?? 3_600_000;
 
-  if (params.aspect === "overview") {
-    const url = teamUrl(sport, league, teamId);
+  try {
+    if (params.aspect === "overview") {
+      const url = teamUrl(sport, league, teamId);
+      const raw = await client.get<Record<string, unknown>>(url, ttl);
+      return trimTeamOverview(raw);
+    }
+
+    const url = teamAspectUrl(sport, league, teamId, params.aspect);
     const raw = await client.get<Record<string, unknown>>(url, ttl);
-    return trimTeamOverview(raw);
-  }
 
-  const url = teamAspectUrl(sport, league, teamId, params.aspect);
-  const raw = await client.get<Record<string, unknown>>(url, ttl);
-
-  switch (params.aspect) {
-    case "roster": return trimRoster(raw);
-    case "schedule": return trimSchedule(raw);
-    default: return raw;
+    switch (params.aspect) {
+      case "roster": return trimRoster(raw);
+      case "schedule": return trimSchedule(raw);
+      default: return raw;
+    }
+  } catch (err) {
+    if (err instanceof EspnApiError && err.status === 404) {
+      return { error: "team_not_found", message: `No ESPN data found for team '${params.team}' (${params.aspect}). Try using the lookup tool to verify the team name.` };
+    }
+    throw err;
   }
 }
