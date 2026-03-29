@@ -25,6 +25,7 @@ export async function getGame(params: GameParams, resolver: Resolver, client: Es
   }
 
   if (!sport || !league) {
+    console.error("[espn-mcp] Warning: get_game called without league — trying all major leagues. Pass league for faster results.");
     const leagues = [
       { sport: "football", league: "nfl" },
       { sport: "basketball", league: "nba" },

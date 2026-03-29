@@ -63,7 +63,7 @@ server.tool(
 
 server.tool(
   "get_game",
-  "Get detailed game data. Requires gameId (from get_scores) and detail (summary|boxscore|playbyplay|odds|winprobability).",
+  "Get detailed game data. Requires gameId (from get_scores) and detail (summary|boxscore|playbyplay|odds|winprobability). Always pass league for fastest results.",
   gameSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getGame(params, resolver, client), null, 2) }],
@@ -90,7 +90,7 @@ server.tool(
 
 server.tool(
   "get_news",
-  "Get latest sports news headlines. Optionally filter by sport, league, or team.",
+  "Get latest sports news headlines. Optionally filter by sport or league.",
   newsSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getNews(params, resolver, client), null, 2) }],
