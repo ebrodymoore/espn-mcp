@@ -60,7 +60,7 @@ export class EspnClient {
       });
 
       if (!response.ok) {
-        this.handleHttpError(response);
+        await this.handleHttpError(response);
       }
 
       const data = (await response.json()) as T;
@@ -75,11 +75,12 @@ export class EspnClient {
     }
   }
 
-  private handleHttpError(response: {
+  private async handleHttpError(response: {
     status: number;
     statusText: string;
     headers?: { get: (name: string) => string | null };
-  }): never {
+    json?: () => Promise<unknown>;
+  }): Promise<never> {
     if (response.status === 429) {
       const retryAfter = response.headers?.get?.("Retry-After");
       const msg = retryAfter
@@ -95,9 +96,24 @@ export class EspnClient {
       );
     }
 
+    // Try to extract a message from the JSON error body
+    let detail = response.statusText;
+    try {
+      const body = await response.json?.();
+      const bodyObj = body as Record<string, unknown> | undefined;
+      const errMsg = (bodyObj?.error as Record<string, unknown>)?.message as string
+        ?? bodyObj?.message as string
+        ?? bodyObj?.error as string;
+      if (typeof errMsg === "string" && errMsg.length > 0) {
+        detail = errMsg;
+      }
+    } catch {
+      // JSON parse failed — use statusText
+    }
+
     throw new EspnApiError(
       response.status,
-      `ESPN API returned ${response.status}: ${response.statusText}`
+      `ESPN API returned ${response.status}: ${detail}`
     );
   }
 

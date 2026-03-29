@@ -155,4 +155,30 @@ describe("EspnClient", () => {
     await client.get("https://site.api.espn.com/test");
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("includes ESPN error message in thrown error when available", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+      json: async () => ({ error: { message: "Invalid team ID" } }),
+    });
+
+    await expect(client.get("https://site.api.espn.com/test")).rejects.toThrow(
+      "Invalid team ID"
+    );
+  });
+
+  it("falls back to statusText when error body is not JSON", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+      json: async () => { throw new Error("not json"); },
+    });
+
+    await expect(client.get("https://site.api.espn.com/test")).rejects.toThrow(
+      "Bad Request"
+    );
+  });
 });
