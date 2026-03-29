@@ -32,11 +32,11 @@ claude mcp add espn -- npx -y espn-mcp
 | `lookup` | Resolve a team name, player, or league to ESPN identifiers | `query` |
 | `get_scores` | Live and recent scores across leagues | `league`, `team`, `date` |
 | `get_team_info` | Team details: roster, schedule, injuries, depth chart, transactions, history | `league`, `team`, `aspect` |
-| `get_player_info` | Player details: stats, game log, splits, bio | `league`, `player`, `aspect` |
+| `get_player_info` | Player details: stats, game log, splits, bio | `league`, `player`, `aspect`, `team` (optional) |
 | `get_game` | Game deep dive: box score, play-by-play, odds, win probability | `gameId`, `detail` |
 | `get_standings` | League standings or poll rankings | `league`, `type` |
 | `get_leaders` | Statistical leaders by category | `league`, `category` |
-| `get_news` | Latest headlines filtered by sport, league, or team | `league`, `team` |
+| `get_news` | Latest headlines filtered by sport or league | `league` |
 
 `sport` is always optional — it's inferred from `league` automatically.
 
@@ -95,9 +95,10 @@ The server sits between Claude and ESPN's public API:
 git clone https://github.com/ebrodymoore/espn-mcp.git
 cd espn-mcp
 npm install
-npm test          # Run tests
-npm run build     # Compile TypeScript
-npm run dev       # Run server in dev mode
+npm test                       # Run unit tests
+RUN_INTEGRATION=1 npm test     # Run unit + integration tests (hits live ESPN API)
+npm run build                  # Compile TypeScript
+npm run dev                    # Run server in dev mode
 ```
 
 ### Regenerate Team Registry
