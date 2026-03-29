@@ -24,6 +24,7 @@ export class EspnClient {
   private maxConcurrent: number;
   private inFlight = 0;
   private queue: Array<() => void> = [];
+  private pending = new Map<string, Promise<unknown>>();
 
   constructor(cache: Cache, options: EspnClientOptions = {}) {
     this.cache = cache;
@@ -37,6 +38,21 @@ export class EspnClient {
       if (cached !== undefined) return cached;
     }
 
+    // Deduplicate concurrent requests to the same URL
+    const existing = this.pending.get(url);
+    if (existing) return existing as Promise<T>;
+
+    const promise = this.fetchAndCache<T>(url, ttlMs);
+    this.pending.set(url, promise);
+
+    try {
+      return await promise;
+    } finally {
+      this.pending.delete(url);
+    }
+  }
+
+  private async fetchAndCache<T>(url: string, ttlMs?: number): Promise<T> {
     await this.acquireSlot();
     try {
       const response = await this.fetchFn(url, {

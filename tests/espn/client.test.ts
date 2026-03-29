@@ -108,4 +108,51 @@ describe("EspnClient", () => {
     await Promise.all(requests);
     expect(maxInFlight).toBeLessThanOrEqual(2);
   });
+
+  it("deduplicates concurrent requests to the same URL", async () => {
+    let callCount = 0;
+    fetchMock.mockImplementation(async () => {
+      callCount++;
+      await new Promise((r) => setTimeout(r, 50));
+      return { ok: true, status: 200, json: async () => ({ data: "result" }) };
+    });
+
+    const [r1, r2, r3] = await Promise.all([
+      client.get("https://site.api.espn.com/same"),
+      client.get("https://site.api.espn.com/same"),
+      client.get("https://site.api.espn.com/same"),
+    ]);
+
+    expect(callCount).toBe(1);
+    expect(r1).toEqual({ data: "result" });
+    expect(r2).toEqual({ data: "result" });
+    expect(r3).toEqual({ data: "result" });
+  });
+
+  it("does not dedup requests to different URLs", async () => {
+    let callCount = 0;
+    fetchMock.mockImplementation(async () => {
+      callCount++;
+      await new Promise((r) => setTimeout(r, 50));
+      return { ok: true, status: 200, json: async () => ({ n: callCount }) };
+    });
+
+    await Promise.all([
+      client.get("https://site.api.espn.com/a"),
+      client.get("https://site.api.espn.com/b"),
+    ]);
+
+    expect(callCount).toBe(2);
+  });
+
+  it("cleans up dedup map after request completes", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ data: 1 }),
+    });
+
+    await client.get("https://site.api.espn.com/test");
+    // Second call after first completes should make a new request
+    await client.get("https://site.api.espn.com/test");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
