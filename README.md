@@ -62,14 +62,12 @@ Once installed, ask Claude things like:
 - "How is Kevin McGonigle doing so far this season?"
 - "What are Justin Verlander's career stats?"
 - "Are there any active MLB games right now?"
-- "Give me the play-by-play from the Red Wings' last game"
+- "Give me the key plays from the Red Wings' last game"
 
 ### Analysis & Comparison
 - "How does Andrew Copp compare to the rest of the Red Wings forwards?"
 - "What's the Pistons' record when Cade Cunningham doesn't play?"
 - "Break down Yaxel Lendeborg's splits — home vs away, by month"
-
-### Playoff & Schedule Intelligence
 - "How difficult is the Red Wings' remaining schedule vs other teams in the playoff hunt?"
 - "How has Detroit performed against the teams remaining on their schedule?"
 - "Break down the Eastern Conference wild card race for me"
