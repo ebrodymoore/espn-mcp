@@ -9,6 +9,7 @@ export const playerInfoSchema = z.object({
   sport: z.string().optional().describe("Sport (optional if league is provided)"),
   league: z.string().describe("League slug (e.g., 'nfl')"),
   player: z.string().describe("Player name or ESPN athlete ID"),
+  team: z.string().optional().describe("Team name to help disambiguate player search"),
   aspect: z.enum(["overview", "stats", "gamelog", "splits", "bio"]).describe("What information to retrieve"),
 });
 
@@ -24,7 +25,8 @@ export async function getPlayerInfo(params: PlayerInfoParams, resolver: Resolver
 
   let playerId = params.player;
   if (!/^\d+$/.test(playerId)) {
-    const searchResult = await client.get<Record<string, unknown>>(searchUrl(params.player), 600_000);
+    const searchQuery = params.team ? `${params.player} ${params.team}` : params.player;
+    const searchResult = await client.get<Record<string, unknown>>(searchUrl(searchQuery), 600_000);
     const results = (searchResult?.results as unknown[]) ?? [];
     const playerSection = results.find((r: unknown) => {
       const type = (r as Record<string, unknown>).type;

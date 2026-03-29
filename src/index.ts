@@ -54,7 +54,7 @@ server.tool(
 
 server.tool(
   "get_player_info",
-  "Get player information. Requires league and aspect (overview|stats|gamelog|splits|bio). Accepts player name or ESPN ID.",
+  "Get player information. Requires league and aspect (overview|stats|gamelog|splits|bio). Accepts player name or ESPN ID. Optional team for disambiguation.",
   playerInfoSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getPlayerInfo(params, resolver, client), null, 2) }],
