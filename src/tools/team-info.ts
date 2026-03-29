@@ -19,7 +19,12 @@ const ASPECT_TTL: Record<string, number> = {
 };
 
 export async function getTeamInfo(params: TeamInfoParams, resolver: Resolver, client: EspnClient): Promise<unknown> {
-  const { sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league });
+  let sport: string, league: string;
+  try {
+    ({ sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league }));
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
   const resolved = resolver.resolveTeam(params.team, league);
   const teamId = resolved?.id ?? params.team;
   const ttl = ASPECT_TTL[params.aspect] ?? 3_600_000;

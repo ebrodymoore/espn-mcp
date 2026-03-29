@@ -15,7 +15,12 @@ export const playerInfoSchema = z.object({
 export type PlayerInfoParams = z.infer<typeof playerInfoSchema>;
 
 export async function getPlayerInfo(params: PlayerInfoParams, resolver: Resolver, client: EspnClient): Promise<unknown> {
-  const { sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league });
+  let sport: string, league: string;
+  try {
+    ({ sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league }));
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
 
   let playerId = params.player;
   if (!/^\d+$/.test(playerId)) {

@@ -89,17 +89,16 @@ export class Resolver {
     sport?: string;
     league?: string;
   }): ResolvedParams {
-    const leagueSlug = params.league
-      ? this.resolveLeague(params.league) ?? params.league
-      : undefined;
+    if (!params.league) {
+      throw new Error("League is required. Provide a league slug (e.g., 'nfl', 'nba', 'nhl', 'mlb').");
+    }
 
-    const sport = leagueSlug
-      ? this.registry[leagueSlug]?.sport ?? params.sport
-      : params.sport;
+    const leagueSlug = this.resolveLeague(params.league) ?? params.league;
+    const sport = this.registry[leagueSlug]?.sport ?? params.sport;
 
-    if (!sport || !leagueSlug) {
+    if (!sport) {
       throw new Error(
-        `Could not resolve sport/league from: sport=${params.sport}, league=${params.league}`
+        `Unknown league '${params.league}'. Use the lookup tool to find the correct league slug.`
       );
     }
 

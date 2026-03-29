@@ -19,7 +19,12 @@ export async function getScores(params: ScoresParams, resolver: Resolver, client
   const dateStr = resolveDate(params.date);
 
   if (params.league) {
-    const { sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league });
+    let sport: string, league: string;
+    try {
+      ({ sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league }));
+    } catch (err) {
+      return { error: (err as Error).message };
+    }
     const url = scoreboardUrl(sport, league, dateStr);
     const raw = await client.get<Record<string, unknown>>(url, 30_000);
     const result = trimScoreboard(raw);

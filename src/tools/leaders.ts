@@ -13,7 +13,12 @@ export const leadersSchema = z.object({
 export type LeadersParams = z.infer<typeof leadersSchema>;
 
 export async function getLeaders(params: LeadersParams, resolver: Resolver, client: EspnClient): Promise<unknown> {
-  const { sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league });
+  let sport: string, league: string;
+  try {
+    ({ sport, league } = resolver.resolveParams({ sport: params.sport, league: params.league }));
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
   const url = leadersUrl(sport, league);
   const raw = await client.get<Record<string, unknown>>(url, 900_000);
   const result = trimLeaders(raw);

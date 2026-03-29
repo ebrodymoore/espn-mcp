@@ -147,5 +147,15 @@ describe("Resolver", () => {
       const result = resolver.resolveParams({ league: "epl" });
       expect(result).toEqual({ sport: "soccer", league: "eng.1" });
     });
+
+    it("throws with a helpful message for unknown league", () => {
+      expect(() => resolver.resolveParams({ league: "curling" }))
+        .toThrow("Unknown league 'curling'");
+    });
+
+    it("throws with a helpful message when no league provided", () => {
+      expect(() => resolver.resolveParams({ sport: "football" }))
+        .toThrow("League is required");
+    });
   });
 });
