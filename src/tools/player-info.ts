@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EspnClient } from "../espn/client.js";
+import { EspnApiError } from "../espn/client.js";
 import type { Resolver } from "../registry/resolver.js";
 import { playerUrl, searchUrl } from "../espn/endpoints.js";
 import { trimPlayerOverview, trimPlayerStats, trimPlayerGamelog } from "../trimmer/player.js";
@@ -36,7 +37,16 @@ export async function getPlayerInfo(params: PlayerInfoParams, resolver: Resolver
   }
 
   const url = playerUrl(sport, league, playerId, params.aspect);
-  const raw = await client.get<Record<string, unknown>>(url, 900_000);
+
+  let raw: Record<string, unknown>;
+  try {
+    raw = await client.get<Record<string, unknown>>(url, 900_000);
+  } catch (err) {
+    if (err instanceof EspnApiError && err.status === 404) {
+      return { error: "player_not_found", message: `No ESPN profile found for '${params.player}'. They may not have played at this level yet.` };
+    }
+    throw err;
+  }
 
   switch (params.aspect) {
     case "overview": return trimPlayerOverview(raw);

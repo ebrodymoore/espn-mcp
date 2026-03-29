@@ -45,7 +45,7 @@ server.tool(
 
 server.tool(
   "get_team_info",
-  "Get team information: overview, roster, schedule (full season), injuries, depth_chart, transactions, or history. For a specific game on a date, use get_scores instead.",
+  "Get team information. Requires league, team, and aspect (overview|roster|schedule|injuries|depth_chart|transactions|history). For a specific game on a date, use get_scores instead.",
   teamInfoSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getTeamInfo(params, resolver, client), null, 2) }],
@@ -54,7 +54,7 @@ server.tool(
 
 server.tool(
   "get_player_info",
-  "Get player information: overview, stats, gamelog, splits, or bio. Accepts player name or ESPN ID.",
+  "Get player information. Requires league and aspect (overview|stats|gamelog|splits|bio). Accepts player name or ESPN ID.",
   playerInfoSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getPlayerInfo(params, resolver, client), null, 2) }],
@@ -63,7 +63,7 @@ server.tool(
 
 server.tool(
   "get_game",
-  "Get detailed game data: summary, boxscore, playbyplay, odds, or winprobability. Use gameId from get_scores.",
+  "Get detailed game data. Requires gameId (from get_scores) and detail (summary|boxscore|playbyplay|odds|winprobability).",
   gameSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getGame(params, resolver, client), null, 2) }],
@@ -72,7 +72,7 @@ server.tool(
 
 server.tool(
   "get_standings",
-  "Get league standings or poll rankings. Rankings available for college sports only.",
+  "Get league standings or poll rankings. Requires league. Rankings available for college sports only.",
   standingsSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getStandings(params, resolver, client), null, 2) }],
@@ -81,7 +81,7 @@ server.tool(
 
 server.tool(
   "get_leaders",
-  "Get statistical leaders for a league. Optionally filter by category (e.g., 'passing', 'scoring').",
+  "Get statistical leaders. Requires league. Optionally filter by category (e.g., 'passing', 'scoring').",
   leadersSchema.shape,
   async (params) => ({
     content: [{ type: "text", text: JSON.stringify(await getLeaders(params, resolver, client), null, 2) }],
