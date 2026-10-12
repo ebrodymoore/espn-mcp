@@ -1,6 +1,6 @@
 # espn-mcp
 
-An MCP server that gives Claude access to live ESPN sports data — scores, stats, rosters, standings, and more across 21 leagues.
+An MCP server that gives Claude access to live ESPN sports data — scores, stats, rosters, standings, and more across 21 leagues. Run it locally over stdio, or host it as a Docker container over HTTP with bearer-token authentication.
 
 ## Installation
 
@@ -24,6 +24,45 @@ Add to your `claude_desktop_config.json`:
 ```bash
 claude mcp add espn -- npx -y espn-mcp
 ```
+
+### Remote (HTTP + Docker)
+
+Set `MCP_TRANSPORT=http` to serve MCP over Streamable HTTP at `POST /mcp` (plus an unauthenticated `GET /health`).
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
+| `HOST` / `PORT` | `127.0.0.1` / `3000` | Listen address |
+| `MCP_AUTH_TOKENS` | — | Comma-separated bearer tokens accepted on `/mcp` |
+| `MCP_AUTH_TOKEN_FILE` | — | File with one token per line (e.g. a Docker secret) |
+| `MCP_ALLOW_UNAUTHENTICATED` | — | `true` to allow listening on a non-loopback address with no tokens |
+
+Clients must send `Authorization: Bearer <token>`; anything else gets `401`. The server refuses to start on a non-loopback address without tokens unless you opt out explicitly.
+
+#### Build and run with Docker Compose
+
+```bash
+mkdir -p secrets
+openssl rand -hex 32 > secrets/mcp_auth_tokens   # one token per line; add more to rotate
+chmod 644 secrets/mcp_auth_tokens                 # container runs as uid 1000 and must read it
+cp .env.example .env                              # optional: port, bind address, limits, image tag
+docker compose up -d --build
+curl http://127.0.0.1:3000/health                 # -> ok
+```
+
+Connect Claude Code to it:
+
+```bash
+claude mcp add --transport http espn http://127.0.0.1:3000/mcp \
+  --header "Authorization: Bearer $(head -1 secrets/mcp_auth_tokens)"
+```
+
+#### Hosting
+
+- **Bind address:** compose publishes on `127.0.0.1` by default. To reach it from other machines set `BIND_ADDRESS=0.0.0.0` in `.env`, but put a TLS-terminating reverse proxy (Caddy, Traefik, nginx, Cloudflare Tunnel) in front — bearer tokens sent over plain HTTP can be sniffed.
+- **Publishing the image:** `docker build -t ghcr.io/<you>/espn-mcp:latest . && docker push ghcr.io/<you>/espn-mcp:latest` (after `docker login ghcr.io`). For a mixed-architecture fleet, use `docker buildx build --platform linux/amd64,linux/arm64 -t ... --push .`. On the host, set `IMAGE` in `.env` and run `docker compose pull && docker compose up -d`.
+- **Rotating tokens:** add the new token to `secrets/mcp_auth_tokens`, `docker compose restart`, update clients, then remove the old token and restart again.
+- **Logs:** `docker compose logs -f espn-mcp`.
 
 ## Tools
 
@@ -88,17 +127,19 @@ The server sits between Claude and ESPN's public API:
 2. **Response trimming** — ESPN responses can be 500KB+. The server extracts only what's relevant (a box score trims down to ~5KB)
 3. **Caching** — In-memory TTL cache prevents redundant API calls (30s for live scores, 1hr for rosters, etc.)
 4. **Concurrency limiting** — Max 2 simultaneous ESPN requests to avoid rate limiting
+5. **Transports** — stdio by default; Streamable HTTP (stateless, one server per request) when `MCP_TRANSPORT=http`, with bearer-token auth on `/mcp`. Tokens are compared in constant time and can be supplied via env var or a mounted secret file
 
 ## Development
 
 ```bash
-git clone https://github.com/ebrodymoore/espn-mcp.git
+git clone https://github.com/cdbailey/espn-mcp.git
 cd espn-mcp
 npm install
 npm test                       # Run unit tests
 RUN_INTEGRATION=1 npm test     # Run unit + integration tests (hits live ESPN API)
 npm run build                  # Compile TypeScript
-npm run dev                    # Run server in dev mode
+npm run dev                    # Run server in dev mode (stdio)
+MCP_TRANSPORT=http MCP_AUTH_TOKENS=dev-token npm run dev   # Run over HTTP on 127.0.0.1:3000
 ```
 
 ### Regenerate Team Registry

@@ -1,3 +1,6 @@
 node_modules/
 dist/
 .superpowers/
+.env
+secrets/
+.DS_Store

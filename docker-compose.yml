@@ -1,0 +1,43 @@
+# ESPN MCP server over Streamable HTTP with bearer-token auth.
+#
+# Customize by creating a `.env` file next to this one (see .env.example);
+# every ${VAR:-default} below can be overridden there.
+
+services:
+  espn-mcp:
+    build: .
+    image: ${IMAGE:-espn-mcp:latest}
+    container_name: ${CONTAINER_NAME:-espn-mcp}
+    restart: unless-stopped
+    ports:
+      # Host side defaults to localhost only; set BIND_ADDRESS=0.0.0.0 to expose on the LAN.
+      - "${BIND_ADDRESS:-127.0.0.1}:${HOST_PORT:-3000}:3000"
+    environment:
+      MCP_TRANSPORT: http
+      HOST: 0.0.0.0
+      PORT: 3000
+      # Token(s) read from the Docker secret below (one per line).
+      MCP_AUTH_TOKEN_FILE: /run/secrets/mcp_auth_tokens
+      # Optional extra comma-separated tokens straight from .env.
+      MCP_AUTH_TOKENS: ${MCP_AUTH_TOKENS:-}
+    secrets:
+      - mcp_auth_tokens
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT:-256m}
+          cpus: "${CPU_LIMIT:-0.5}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+secrets:
+  mcp_auth_tokens:
+    file: ${MCP_AUTH_TOKEN_FILE_HOST:-./secrets/mcp_auth_tokens}
